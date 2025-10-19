@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>[면적 단위 변환기]</title>
+<style>
+  body { font-family: '맑은 고딕', sans-serif; padding: 20px; }
+  label { display: inline-block; width: 120px; font-size: 18px; }
+  input { font-size: 18px; width: 150px; text-align: right; margin-bottom: 12px; }
+  .input-green { background-color: palegreen; }
+  .input-yellow { background-color: lightyellow; }
+</style>
+</head>
+<body>
+  <div>
+    <label for="_sqm">[전용면적 ㎡]</label>
+    <input type="number" id="_sqm" step="0.01" />
+  </div>
+  <div>
+    <label for="supply_sqm">[공급면적 ㎡]</label>
+    <input type="number" id="supply_sqm" step="0.01" />
+  </div>
+  <div>
+    <label for="_pyeong">[전용면적 평]</label>
+    <input type="number" id="_pyeong" step="0.01" />
+  </div>
+  <div>
+    <label for="supply_pyeong">[공급면적 평]</label>
+    <input type="number" id="supply_pyeong" step="0.01" />
+  </div>
+
+<script>
+  const SqmInput = document.getElementById('_sqm');
+  const supplySqmInput = document.getElementById('supply_sqm');
+  const PyeongInput = document.getElementById('_pyeong');
+  const supplyPyeongInput = document.getElementById('supply_pyeong');
+
+  const conversionRate = 3.3058;
+  const ratioToSupply = 0.76;
+
+  let isUpdating = false;
+
+  function sqmToPyeong(sqm) {
+    return sqm / conversionRate;
+  }
+
+  function pyeongToSqm(pyeong) {
+    return pyeong * conversionRate;
+  }
+
+  function updateFromSupplySqm() {
+    if (isUpdating) return;
+    isUpdating = true;
+
+    const supplySqm = parseFloat(supplySqmInput.value);
+    if (isNaN(supplySqm)) {
+      clearAll();
+      isUpdating = false;
+      return;
+    }
+    const Sqm = supplySqm * ratioToSupply;
+    const supplyPyeong = sqmToPyeong(supplySqm);
+    const Pyeong = sqmToPyeong(Sqm);
+
+    SqmInput.value = Sqm.toFixed(2);
+    supplyPyeongInput.value = supplyPyeong.toFixed(2);
+    PyeongInput.value = Pyeong.toFixed(2);
+
+    setBackgrounds(supplySqmInput, [SqmInput, supplyPyeongInput, PyeongInput]);
+
+    isUpdating = false;
+  }
+
+  function updateFromSqm() {
+    if (isUpdating) return;
+    isUpdating = true;
+
+    const Sqm = parseFloat(SqmInput.value);
+    if (isNaN(Sqm)) {
+      clearAll();
+      isUpdating = false;
+      return;
+    }
+    const supplySqm = Sqm / ratioToSupply;
+    const Pyeong = sqmToPyeong(Sqm);
+    const supplyPyeong = sqmToPyeong(supplySqm);
+
+    supplySqmInput.value = supplySqm.toFixed(2);
+    PyeongInput.value = Pyeong.toFixed(2);
+    supplyPyeongInput.value = supplyPyeong.toFixed(2);
+
+    setBackgrounds(SqmInput, [supplySqmInput, PyeongInput, supplyPyeongInput]);
+
+    isUpdating = false;
+  }
+
+  function updateFromSupplyPyeong() {
+    if (isUpdating) return;
+    isUpdating = true;
+
+    const supplyPyeong = parseFloat(supplyPyeongInput.value);
+    if (isNaN(supplyPyeong)) {
+      clearAll();
+      isUpdating = false;
+      return;
+    }
+    const supplySqm = pyeongToSqm(supplyPyeong);
+    const Sqm = supplySqm * ratioToSupply;
+    const Pyeong = sqmToPyeong(Sqm);
+
+    supplySqmInput.value = supplySqm.toFixed(2);
+    SqmInput.value = Sqm.toFixed(2);
+    PyeongInput.value = Pyeong.toFixed(2);
+
+    setBackgrounds(supplyPyeongInput, [supplySqmInput, SqmInput, PyeongInput]);
+
+    isUpdating = false;
+  }
+
+  function updateFromPyeong() {
+    if (isUpdating) return;
+    isUpdating = true;
+
+    const Pyeong = parseFloat(PyeongInput.value);
+    if (isNaN(Pyeong)) {
+      clearAll();
+      isUpdating = false;
+      return;
+    }
+    const Sqm = pyeongToSqm(Pyeong);
+    const supplySqm = Sqm / ratioToSupply;
+    const supplyPyeong = sqmToPyeong(supplySqm);
+
+    SqmInput.value = Sqm.toFixed(2);
+    supplySqmInput.value = supplySqm.toFixed(2);
+    supplyPyeongInput.value = supplyPyeong.toFixed(2);
+
+    setBackgrounds(PyeongInput, [SqmInput, supplySqmInput, supplyPyeongInput]);
+
+    isUpdating = false;
+  }
+
+  function clearAll() {
+    SqmInput.value = '';
+    supplySqmInput.value = '';
+    PyeongInput.value = '';
+    supplyPyeongInput.value = '';
+
+    SqmInput.classList.remove('input-green', 'input-yellow');
+    supplySqmInput.classList.remove('input-green', 'input-yellow');
+    PyeongInput.classList.remove('input-green', 'input-yellow');
+    supplyPyeongInput.classList.remove('input-green', 'input-yellow');
+  }
+
+  function setBackgrounds(activeInput, otherInputs) {
+    activeInput.classList.add('input-green');
+    otherInputs.forEach(input => {
+      input.classList.remove('input-green');
+      input.classList.add('input-yellow');
+    });
+  }
+
+  SqmInput.addEventListener('input', updateFromSqm);
+  supplySqmInput.addEventListener('input', updateFromSupplySqm);
+  PyeongInput.addEventListener('input', updateFromPyeong);
+  supplyPyeongInput.addEventListener('input', updateFromSupplyPyeong);
+</script>
+
+</body>
+</html>
